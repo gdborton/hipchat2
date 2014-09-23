@@ -4,10 +4,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
+	"math/rand"
 )
 
-const (
-	testRoomName = "Test Room"
+var (
+	letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	testRoomName = randSeq(10)
 )
 
 func TestCreateRoom(t *testing.T) {
@@ -102,3 +104,12 @@ func TestGetUsers(t *testing.T) {
 	assert.Equal(t, true, len(users) > 0, "Expect to find more than zero users.")
 }
 */
+
+
+func randSeq(n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(b)
+}
