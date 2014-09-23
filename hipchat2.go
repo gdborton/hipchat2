@@ -1,3 +1,7 @@
+/* Package hipchat2 is a client for the hipchat v2 api.
+
+ https://www.hipchat.com/docs/apiv2
+ */
 package hipchat2
 
 import (
