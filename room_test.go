@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	testRoomName = "Test Room1"
+	testRoomName = "Test Room"
 )
 
 func TestCreateRoom(t *testing.T) {
@@ -46,7 +46,7 @@ func TestSendRoomNotification(t *testing.T) {
 		MessageFormat: "text"}
 
 	room := &Room{
-		Name: "test"}
+		Name: testRoomName}
 	err := room.SendNotification(message)
 	assert.Nil(t, err, "Shouldn't find an error.")
 }
