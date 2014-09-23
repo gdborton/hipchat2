@@ -96,16 +96,6 @@ func TestDelete(t *testing.T) {
 	assert.Nil(t, err, "Shouldn't find an error.")
 }
 
-/*
-func TestGetUsers(t *testing.T) {
-	AuthToken = os.Getenv("TEST_TOKEN")
-	users, err := client.GetUsers()
-	assert.Nil(t, err, "Shouldn't find an error")
-	assert.Equal(t, true, len(users) > 0, "Expect to find more than zero users.")
-}
-*/
-
-
 func randSeq(n int) string {
 	b := make([]rune, n)
 	for i := range b {
