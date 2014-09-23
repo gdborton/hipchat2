@@ -16,7 +16,7 @@ type Room struct {
 	Name string `json:"name,omitempty"`
 
 	// Whether or not this room is archived.
-	IsArchived bool `json:"is_archived,omitempty"`
+	IsArchived bool `json:"is_archived"`
 
 	// XMPP/Jabber ID of the room.
 	XmppJid string `json:"xmpp_jid,omitempty"`
@@ -28,7 +28,7 @@ type Room struct {
 	GuestAccessUrl string `json:"guest_access_url,omitempty"`
 
 	// Whether or not guests can access this room.
-	IsGuestAccessible bool `json:"is_guest_accessible,omitempty"`
+	IsGuestAccessible bool `json:"is_guest_accessible"`
 
 	// Last time the room was active in UTC.
 	LastActive string `json:"last_active,omitempty"`
@@ -45,21 +45,13 @@ type Room struct {
 
 }
 
-// TODO -- invite
 // TODO -- share file
-// TODO -- create
-// TODO -- get all
 // TODO -- view recent history
-// TODO -- send notification
-// TODO -- update room
-// TODO -- get room
-// TODO -- delete room
 // TODO -- create webhook
 // TODO -- get all webhooks
 // TODO -- get room statistics
 // TODO -- reply to message
 // TODO -- get all members
-// TODO -- set topic
 // TODO -- share link with room
 // TODO -- add member
 // TODO -- remove member
@@ -69,6 +61,9 @@ type Room struct {
 // TODO -- get room message
 // TODO -- get all participants
 
+
+// Get all rooms - https://www.hipchat.com/docs/apiv2/method/get_all_rooms
+// TODO -- query params: start-index, max-results, include-archived
 func GetRooms () ([]Room, error) {
 	uri := fmt.Sprintf("https://%s/v2/room?auth_token=%s", Host, AuthToken)
 
@@ -86,6 +81,7 @@ func GetRooms () ([]Room, error) {
 	return roomsResp.Items, nil
 }
 
+// Get Room - https://www.hipchat.com/docs/apiv2/method/get_room
 func (room *Room) Fetch () (error) {
 	nameOrId, err := room.nameOrId()
 	if err != nil {
@@ -105,19 +101,35 @@ func (room *Room) Fetch () (error) {
 	return nil
 }
 
+// See save existing/save new.
 func (room *Room) Save () (error) {
-	if room.Id == 0 {
+	if room.Id == 0 {  // If you don't have an Id, assume the room doesn't yet exist.
 		return room.saveNewRoom()
 	}else {
 		return room.saveExistingRoom()
 	}
 }
 
+// Update Existing Room - https://www.hipchat.com/docs/apiv2/method/update_room
 func (room *Room) saveExistingRoom () (error) {
-	// TODO - finish me.
+	nameOrId, err := room.nameOrId()
+	if err != nil {
+		return err
+	}
+	uri := fmt.Sprintf("https://%s/v2/room/%s?auth_token=%s", Host, nameOrId, AuthToken)
+	payload, marshalError := json.Marshal(room)
+	if marshalError != nil {
+		return marshalError
+	}
+	body, err := put(uri, payload)
+	_ = body
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
+// Create Room - https://www.hipchat.com/docs/apiv2/method/create_room
 func (room *Room) saveNewRoom () (error) {
 	uri := fmt.Sprintf("https://%s/v2/room?auth_token=%s", Host, AuthToken)
 
@@ -140,6 +152,7 @@ func (room *Room) saveNewRoom () (error) {
 	return nil
 }
 
+// Invite a user to the room - https://www.hipchat.com/docs/apiv2/method/invite_user
 func (room *Room) InviteUser (user *User, reason string) (error) {
 	roomNameOrId, err := room.nameOrId()
 	if err != nil {
@@ -164,6 +177,7 @@ func (room *Room) InviteUser (user *User, reason string) (error) {
 	return nil
 }
 
+// Delete Room - https://www.hipchat.com/docs/apiv2/method/delete_room
 func (room *Room) Delete () (error) {
 	nameOrId, err := room.nameOrId()
 	if err != nil {
@@ -173,6 +187,7 @@ func (room *Room) Delete () (error) {
 	return delete(uri)
 }
 
+// Send Notification to the room - https://www.hipchat.com/docs/apiv2/method/send_room_notification
 func (room *Room) SendNotification (message *Message) (error) {
 	nameOrId, err := room.nameOrId()
 	if err != nil {
@@ -193,9 +208,30 @@ func (room *Room) SendNotification (message *Message) (error) {
 	return nil
 }
 
+// Set Topic for the room - https://www.hipchat.com/docs/apiv2/method/set_topic
+func (room *Room) SetTopic (topic string) (error) {
+	nameOrId, err := room.nameOrId()
+	if err != nil {
+		return err
+	}
+	uri := fmt.Sprintf("https://%s/v2/room/%s/topic?auth_token=%s", Host, nameOrId, AuthToken)
+	room.Topic = topic
+	payload, err := json.Marshal(room)
+	if err != nil {
+		return err
+	}
+	body, err := put(uri, payload)
+	_ = body
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Checks the room for a name or id field to use with the api, returns an error if neither are found.
 func (room *Room) nameOrId () (string, error) {
 	switch {
-		case room.Id != 0: return fmt.Sprintf("%s", room.Id), nil
+		case room.Id != 0: return fmt.Sprintf("%d", room.Id), nil
 		case room.Name != "": return room.Name, nil
 		default: return "", errors.New("A room with a valid name or id is required.")
 	}

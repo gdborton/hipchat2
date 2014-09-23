@@ -60,6 +60,33 @@ func TestInviteUser(t *testing.T) {
 	assert.Nil(t, err, "Shouldn't find an error.")
 }
 
+func TestUpdate(t *testing.T) {
+	AuthToken = os.Getenv("TEST_TOKEN")
+	room := &Room{Name: testRoomName}
+	err := room.Fetch()
+	assert.Nil(t, err, "Shouldn't find an error.")
+	topicString := "My new topic"
+	room.Topic = topicString
+	room.Save()
+	room2 := &Room{Name: testRoomName}
+	err = room2.Fetch()
+	assert.Nil(t, err, "Shouldn't find an error.")
+	assert.Equal(t, topicString, room2.Topic, "Expect to find the topic string that was set.")
+}
+
+func TestSetTopic(t *testing.T) {
+	AuthToken = os.Getenv("TEST_TOKEN")
+	room := &Room{Name: testRoomName}
+	err := room.Fetch()
+	assert.Nil(t, err, "Shouldn't find an error.")
+	topicString := "My new topic2"
+	room.SetTopic(topicString)
+	room2 := &Room{Name: testRoomName}
+	err = room2.Fetch()
+	assert.Nil(t, err, "Shouldn't find an error.")
+	assert.Equal(t, topicString, room2.Topic, "Expect to find the topic string that was set.")
+}
+
 func TestDelete(t *testing.T) {
 	AuthToken = os.Getenv("TEST_TOKEN")
 	room := &Room{Name: testRoomName}
