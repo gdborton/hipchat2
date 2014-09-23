@@ -64,7 +64,11 @@ func post (uri string, payload []byte) ([]byte, error) {
 		return nil, err
 	}
 	if response.StatusCode <= 200 || response.StatusCode > 300 {
-		return nil, errors.New(fmt.Sprintf("Expected a 200 response, instead found - %d", response.StatusCode))
+		var errResp ErrorResponse
+		if err := json.Unmarshal(body, &errResp); err != nil {
+			return nil, err
+		}
+		return nil, errors.New(errResp.Error.Message)
 	}
 	return body, nil
 }
@@ -83,7 +87,6 @@ func delete (uri string) (error) {
 		return err
 	}
 	if response.StatusCode != 204 {
-		//return errors.New(fmt.Sprintf("Expected a 204 response, instead found - %d", response.StatusCode))
 		var errResp ErrorResponse
 		if err := json.Unmarshal(body, &errResp); err != nil {
 			return err
@@ -94,4 +97,34 @@ func delete (uri string) (error) {
 		return errors.New(errResp.Error.Message)
 	}
 	return nil
+}
+
+func put (uri string, payload []byte) ([]byte, error) {
+	httpClient := &http.Client{}
+	req, err:= http.NewRequest("PUT", uri, bytes.NewReader(payload))
+
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	req.Header.Set("content-type", "application/json")
+	response, err := httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+	if response.StatusCode <= 200 || response.StatusCode > 300 {
+		var errResp ErrorResponse
+		if err := json.Unmarshal(body, &errResp); err != nil {
+			return nil, err
+		}
+		return nil, errors.New(errResp.Error.Message)
+	}
+	return body, nil
 }
